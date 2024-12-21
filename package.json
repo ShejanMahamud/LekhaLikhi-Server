@@ -1,9 +1,9 @@
 {
   "name": "blog-project",
   "version": "1.0.0",
-  "main": "/dist/src/app/app.js",
+  "main": "/src/app/app.ts",
   "scripts": {
-    "start": "node /dist/src/app/app.js",
+    "start": "node /src/app/app.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/app/server.ts",
     "build": "tsc",
     "heroku-postbuild": "npm run build",
