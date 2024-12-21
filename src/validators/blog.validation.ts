@@ -8,6 +8,8 @@ export const blogValidationSchema = z.object({
   content: z
     .string()
     .min(10, { message: 'Content at least 10 characters long' }),
-  isPublished: z.boolean({ message: 'isPublished must be a boolean' }),
-  author: z.string().uuid({ message: 'Invalid author id' }),
+  isPublished: z
+    .boolean({ message: 'isPublished must be a boolean' })
+    .optional(),
+  author: z.string().uuid({ message: 'Invalid author id' }).optional(),
 });

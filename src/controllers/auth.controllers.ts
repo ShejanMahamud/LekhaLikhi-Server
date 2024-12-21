@@ -30,6 +30,11 @@ export const registerUser = async (
       status: StatusCodes.CREATED,
       success: true,
       message: 'User registered successfully',
+      data: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     next(error);
@@ -44,12 +49,28 @@ export const loginUser = async (
   try {
     const { email, password } = userValidationSchema.parse(req.body);
 
+    if (!password || !email) {
+      return sendResponse(res, {
+        status: StatusCodes.BAD_REQUEST,
+        success: false,
+        message: 'Email and password are required',
+      });
+    }
+
     const user = await UserModel.findOne({ email });
     if (!user) {
       return sendResponse(res, {
         status: StatusCodes.UNAUTHORIZED,
         success: false,
-        message: 'Invalid email or password',
+        message: 'User not found',
+      });
+    }
+
+    if (!user.password) {
+      return sendResponse(res, {
+        status: StatusCodes.UNAUTHORIZED,
+        success: false,
+        message: 'User has no password set. Contact support',
       });
     }
 

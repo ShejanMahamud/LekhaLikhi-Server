@@ -1,173 +1,288 @@
-# Express TypeScript Starter CLI 🚀
+# Blog Platform Backend
 
-[![NPM Version](https://img.shields.io/npm/v/express-ts-starter-cli.svg)](https://www.npmjs.com/package/express-ts-starter-cli)
-
-[![License](https://img.shields.io/npm/l/express-ts-starter-cli.svg)](https://github.com/shejanmahamud/express-ts-starter-cli/blob/main/LICENSE)
-
-[![Downloads](https://img.shields.io/npm/dt/express-ts-starter-cli.svg)](https://www.npmjs.com/package/express-ts-starter-cli)
-
-A powerful and easy-to-use CLI tool to kickstart your **Express.js + TypeScript + Mongoose(Default)** projects in seconds. Save time and focus on building amazing features without worrying about the boilerplate!
+This is the backend for a **Blogging Platform** where users can register, log in, and create, update, and delete their own blogs. Admin users can manage other users and blogs. This project is built using **TypeScript**, **Node.js**, **Express.js**, and **MongoDB** with **Mongoose** for database operations.
 
 ---
 
-## ✨ Features
+## 🚀 **Features**
 
-- **TypeScript Support**: Get started with a fully typed Express.js project.
+### **User Roles**
 
-- **Mongoose Integration**: Built-in support for MongoDB with Mongoose models.
+- **Admin**:
+  - Manage users (Block and delete blogs)
+  - Cannot update blogs
+- **User**:
+  - Register and log in
+  - Create, update, and delete their own blogs
+  - Cannot perform admin actions
 
-- **Customizable Templates**: Generate projects tailored to your needs.
+### **Blog API**
 
-- **Zero Hassle**: Pre-configured with best practices like `eslint` and `prettier`.
+- Users can perform CRUD operations on blogs (create, read, update, delete).
+- Admin can manage blogs and block users.
+- Public API for fetching blogs with search, sort, and filter capabilities.
 
-- **Scalable Structure**: Designed for small to large projects.
+### **Authentication & Authorization**
 
-- **Interactive CLI**: Guides you through the setup with a beautiful and intuitive interface.
+- JWT-based authentication for secure login.
+- Role-based access control for **admin** and **user** roles.
 
 ---
 
-## 🚀 Installation
+## 🛠 **Technologies Used**
 
-Install the CLI globally via npm:
+- **Node.js**: JavaScript runtime environment
+- **Express.js**: Web framework for building RESTful APIs
+- **MongoDB**: NoSQL database for storing user and blog data
+- **Mongoose**: ODM for MongoDB
+- **TypeScript**: Typed superset of JavaScript
+- **JWT**: JSON Web Tokens for secure user authentication
+
+---
+
+## 📋 **Installation**
+
+### **Clone the Repository**
 
 ```bash
-
-npm  install  -g  express-ts-starter-cli
-
+git clone https://github.com/your-username/blog-platform-backend.git
+cd blog-platform-backend
 ```
 
-or
+### **Install Dependencies**
+
+Make sure you have **Node.js** installed. Then, install the required dependencies:
 
 ```bash
-npx express-ts-starter-cli
-
+npm install
 ```
 
----
+### **Environment Variables**
 
-## 🛠️ Usage
+Create a `.env` file in the root directory and add the following variables:
 
-Run the following command to create a new project:
+```
+MONGO_URI=mongodb://localhost:27017/blogPlatform
+JWT_SECRET=your_jwt_secret
+PORT=5000
+```
+
+### **Run the Application**
+
+To run the server locally:
 
 ```bash
-
-express-ts-starter
-
+npm start
 ```
 
-The CLI will guide you through the setup with options like:
-
-- Choosing a project name
-
-- Setting up environment variables
+The server will be running at `http://localhost:5000`.
 
 ---
 
-## 🗂️ Project Structure
+## **API Endpoints**
 
-The generated project will have the following structure:
+### **1. Authentication**
 
+#### 1.1 Register User
+
+**POST** `/api/auth/register`
+
+Request Body:
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword"
+}
 ```
 
-my-express-project/
+Response:
 
-├── src/
-│ ├── app/
-│   ├── app.ts
-│   ├── server.ts
-│ ├── middlewares/
-| ├── controllers/
-│ ├── routes/
-│ ├── models/
-│ ├── helpers/
-│ ├── types/
-│ ├── utils/
-├── .prettierrc
-├── .eslint.config.mjs
-├── .env
-├── package.json
-└── tsconfig.json
-
+```json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "data": {
+    "_id": "user_id",
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}
 ```
 
-### Key Features
+#### 1.2 Login User
 
-- **Controllers**: Keep your logic modular and organized.
+**POST** `/api/auth/login`
 
-- **Models**: Keep your mongoose models here.
+Request Body:
 
-- **Helpers**: Keep your helpers function here.
-
-- **Routes**: Define application endpoints cleanly.
-
-- **Middleware**: Add custom Express middlewares effortlessly.
-
-- **Types**: Keep your typescript types here.
-
-- **Utils**: Keep your utility functions here.
-
----
-
-## 📦 What’s Included?
-
-When you use the CLI, you'll get:
-
-- **TypeScript Config**: Pre-configured `tsconfig.json` for seamless development.
-
-- **Express Setup**: Pre-configured `expressjs` .
-
-- **Environment Management**: `.env` file support for configuration.
-
-- **Mongoose Models**: Boilerplate for defining schemas and connecting to MongoDB.
-
----
-
-## 🌟 Why Choose This Starter?
-
-- **Time-Saving**: Set up your project in seconds.
-
-- **Best Practices**: Industry-standard configurations for scalability and maintainability.
-
-- **Community-Driven**: Actively maintained and improved.
-
-- **MongoDB Ready**: Jumpstart your database integration with Mongoose.
-
----
-
-## 🧪 Example
-
-To test if everything is working, run the development server:
-
-```bash
-
-npm run dev
-
+```json
+{
+  "email": "john@example.com",
+  "password": "securepassword"
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser. You’ll see a welcoming API response!
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "jwt_token"
+  }
+}
+```
+
+### **2. Blog Management**
+
+#### 2.1 Create Blog
+
+**POST** `/api/blogs`
+
+Request Header:
+
+```
+Authorization: Bearer <token>
+```
+
+Request Body:
+
+```json
+{
+  "title": "My First Blog",
+  "content": "This is the content of my blog."
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Blog created successfully",
+  "data": {
+    "_id": "blog_id",
+    "title": "My First Blog",
+    "content": "This is the content of my blog.",
+    "author": { "name": "John Doe" }
+  }
+}
+```
+
+#### 2.2 Update Blog
+
+**PATCH** `/api/blogs/:id`
+
+Request Header:
+
+```
+Authorization: Bearer <token>
+```
+
+Request Body:
+
+```json
+{
+  "title": "Updated Blog Title",
+  "content": "Updated content"
+}
+```
+
+#### 2.3 Delete Blog
+
+**DELETE** `/api/blogs/:id`
+
+Request Header:
+
+```
+Authorization: Bearer <token>
+```
+
+#### 2.4 Get All Blogs (Public)
+
+**GET** `/api/blogs`
+
+Query Parameters:
+
+- `search`: Search by title or content
+- `sortBy`: Sort blogs by fields like `createdAt`
+- `sortOrder`: Sort in ascending or descending order
+- `filter`: Filter by author ID
+
+Example URL:
+
+```
+/api/blogs?search=technology&sortBy=createdAt&sortOrder=desc&filter=author_id
+```
+
+### **3. Admin Actions**
+
+#### 3.1 Block User
+
+**PATCH** `/api/admin/users/:userId/block`
+
+Request Header:
+
+```
+Authorization: Bearer <admin_token>
+```
+
+#### 3.2 Delete Blog
+
+**DELETE** `/api/admin/blogs/:id`
+
+Request Header:
+
+```
+Authorization: Bearer <admin_token>
+```
 
 ---
 
-## 🤝 Contributing
+## 🔒 **Authentication & Authorization**
 
-Contributions are welcome! Feel free to:
-
-- Open issues for feature requests or bugs.
-
-- Submit pull requests to improve the CLI.
+- **JWT Authentication**: All routes (except public ones) require a valid JWT token.
+- **Admin Role**: Admin has access to manage users and blogs, and block users.
+- **User Role**: Users can create, update, and delete their own blogs.
 
 ---
 
-## 📄 License
+## 📂 **File Structure**
 
-This project is licensed under the [MIT License](./LICENSE).
+```
+/blog-platform-backend
+│
+├── /src
+│   ├── /controllers       # Controller functions
+│   ├── /models            # Mongoose models (User, Blog)
+│   ├── /routes            # API routes
+│   ├── /middleware        # Middleware (Authentication, Authorization)
+│   ├── /utils             # Helper functions and utilities
+│   └── app.ts             # Main entry point for the server
+│
+├── .env                   # Environment variables
+├── package.json           # Project dependencies and scripts
+└── README.md              # This file
+```
 
 ---
 
-## 🙋 Support
+## 🗣 **Admin Login Credentials**
 
-If you encounter any issues or have questions, feel free to open an issue on [GitHub](https://github.com/ShejanMahamud/express-ts-starter-cli/issues).
+For testing purposes, use the following admin credentials:
+
+- **Email**: `admin@example.com`
+- **Password**: `adminpassword`
 
 ---
 
-> Made with ❤️ by [Shejan Mahamud](https://github.com/ShejanMahamud).
+## 🌐 **Live Deployment**
+
+You can access the live deployment of the blog platform backend here:
+
+[Live Server Link](link_to_live_server)
+
+---

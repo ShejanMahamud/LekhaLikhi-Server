@@ -10,7 +10,8 @@ export const blockUser = async (
 ) => {
   try {
     const user = req.user as { id: string };
-    const { userId } = req.query;
+    const { userId } = req.params;
+    console.log('user', user);
     const isAdmin = await UserModel.exists({ _id: user?.id, role: 'admin' });
     if (!isAdmin) {
       return sendResponse(res, {

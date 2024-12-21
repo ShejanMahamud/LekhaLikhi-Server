@@ -4,6 +4,7 @@ import { z } from 'zod';
 import QueryBuilder from '../builder/QueryBuilder';
 import { sendResponse } from '../helpers/responseHandler';
 import { BlogModel } from '../models/blog.model';
+import { UserModel } from '../models/user.model';
 import { blogValidationSchema } from '../validators/blog.validation';
 
 export const createBlog = async (
@@ -13,9 +14,13 @@ export const createBlog = async (
 ) => {
   try {
     const validatedBlog = blogValidationSchema.parse(req.body);
+    validatedBlog.author = (req.user as { id: string }).id;
     const blog = new BlogModel(validatedBlog);
     await blog.save();
-    const populatedBlog = await BlogModel.findById(blog._id).populate('author');
+    const populatedBlog = await BlogModel.findById(blog._id).populate({
+      path: 'author',
+      select: 'email name',
+    });
     sendResponse(res, {
       status: StatusCodes.CREATED,
       success: true,
@@ -34,7 +39,7 @@ export const updateBlog = async (
 ) => {
   try {
     const user = req.user as { id: string };
-    const { id } = req.query;
+    const { id } = req.params;
     const validatedBlog = blogValidationSchema.parse(req.body);
     const isOwnBlog = await BlogModel.exists({ _id: id, author: user?.id });
     if (!isOwnBlog) {
@@ -52,7 +57,10 @@ export const updateBlog = async (
         message: 'Blog not modified',
       });
     }
-    const populatedBlog = await BlogModel.findById(id).populate('author');
+    const populatedBlog = await BlogModel.findById(id).populate({
+      path: 'author',
+      select: 'name email',
+    });
     sendResponse(res, {
       status: StatusCodes.OK,
       success: true,
@@ -105,8 +113,16 @@ export const getAllBlogs = async (
     });
     const validQuery = sanitizeQuery.parse(req.query);
 
-    if (!req.query) {
-      const blogs = await BlogModel.find().populate('author');
+    if (
+      !req.query.search &&
+      !req.query.sortBy &&
+      !req.query.filter &&
+      !req.query.sortOrder
+    ) {
+      const blogs = await BlogModel.find({}).populate({
+        path: 'author',
+        select: 'name email',
+      });
       return sendResponse(res, {
         status: StatusCodes.OK,
         success: true,
@@ -115,13 +131,24 @@ export const getAllBlogs = async (
       });
     }
 
-    const blogs = new QueryBuilder(BlogModel.find(), validQuery)
+    const blogs = await new QueryBuilder(BlogModel.find(), validQuery)
       .search(['title', 'content'])
       .filter()
       .sortBy()
       .sortOrder()
-      .modelQuery.populate('author')
+      .modelQuery.populate({
+        path: 'author',
+        select: 'name email',
+      })
       .exec();
+
+    if (blogs.length === 0) {
+      return sendResponse(res, {
+        status: StatusCodes.NOT_FOUND,
+        success: false,
+        message: 'No blogs found',
+      });
+    }
 
     sendResponse(res, {
       status: StatusCodes.OK,
@@ -141,8 +168,9 @@ export const deleteAnyBlogByAdmin = async (
 ) => {
   try {
     const user = req.user as { id: string };
-    const { id } = req.query;
-    const isAdmin = await BlogModel.exists({ _id: user?.id, role: 'admin' });
+    console.log('user', user);
+    const { id } = req.params;
+    const isAdmin = await UserModel.exists({ _id: user?.id, role: 'admin' });
     if (!isAdmin) {
       return sendResponse(res, {
         status: StatusCodes.FORBIDDEN,
