@@ -274,8 +274,8 @@ Authorization: Bearer <admin_token>
 
 For testing purposes, use the following admin credentials:
 
-- **Email**: `admin@example.com`
-- **Password**: `adminpassword`
+- **Email**: `john@example.com`
+- **Password**: `securepassword`
 
 ---
 
